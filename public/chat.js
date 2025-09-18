@@ -9,16 +9,18 @@ const chatMessages = document.getElementById("chat-messages");
 const userInput = document.getElementById("user-input");
 const sendButton = document.getElementById("send-button");
 const typingIndicator = document.getElementById("typing-indicator");
+const suggestionsEl = document.getElementById("suggestions");
 
 // Chat state
 let chatHistory = [
   {
     role: "assistant",
     content:
-      "Hello! I'm an LLM chat app powered by Cloudflare Workers AI. How can I help you today?",
+      "Hi! I'm Lily, your Learn It Live virtual support assistant. How can I help you today?",
   },
 ];
 let isProcessing = false;
+let resourcesData = null;
 
 // Auto-resize textarea as user types
 userInput.addEventListener("input", function () {
@@ -36,6 +38,36 @@ userInput.addEventListener("keydown", function (e) {
 
 // Send button click handler
 sendButton.addEventListener("click", sendMessage);
+
+// Load and render suggestions from resources.json
+(async function loadSuggestions() {
+  if (!suggestionsEl) return;
+  try {
+    const res = await fetch("/resources.json");
+    if (!res.ok) return;
+    resourcesData = await res.json();
+    if (!resourcesData || !Array.isArray(resourcesData.intents)) return;
+
+    suggestionsEl.innerHTML = "";
+    resourcesData.intents.forEach((intent) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = intent.label;
+      const example = Array.isArray(intent.examples) && intent.examples[0];
+      if (example) btn.dataset.example = example;
+      btn.addEventListener("click", () => {
+        const prompt = btn.dataset.example || btn.textContent;
+        userInput.value = prompt;
+        userInput.dispatchEvent(new Event("input"));
+        sendMessage();
+      });
+      suggestionsEl.appendChild(btn);
+    });
+  } catch (e) {
+    // Silently ignore suggestion load failures
+    console.error("Failed to load suggestions", e);
+  }
+})();
 
 /**
  * Sends a message to the chat API and processes the response

@@ -1,0 +1,62 @@
+{
+  "brand": {
+    "name": "Lily Virtual Support",
+    "org": "Learn It Live",
+    "site": "https://www.learnitlive.com"
+  },
+  "intents": [
+    {
+      "id": "find_classes",
+      "label": "Find classes",
+      "examples": [
+        "Show upcoming yoga classes",
+        "Find beginner meditation sessions",
+        "What nutrition classes are available next week?"
+      ],
+      "searchUrl": "https://www.learnitlive.com/classes"
+    },
+    {
+      "id": "schedule",
+      "label": "Today’s schedule",
+      "examples": [
+        "What classes are happening today?",
+        "Any live events right now?"
+      ],
+      "scheduleUrl": "https://www.learnitlive.com/classes?filter=today"
+    },
+    {
+      "id": "account_help",
+      "label": "Account help",
+      "examples": [
+        "How do I reset my password?",
+        "Where are my past registrations?"
+      ],
+      "helpUrl": "https://www.learnitlive.com/help"
+    },
+    {
+      "id": "pricing",
+      "label": "Membership & pricing",
+      "examples": [
+        "What does membership include?",
+        "How does billing work?"
+      ],
+      "pricingUrl": "https://www.learnitlive.com/pricing"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How do I join a live class?",
+      "a": "Register on the class page. Near start time, use the Join button in your registrations."
+    },
+    {
+      "q": "Do you offer recordings?",
+      "a": "Many classes provide recordings. Check the class page for replay availability."
+    },
+    {
+      "q": "What time zone are classes listed in?",
+      "a": "Classes display in your local time based on your browser settings."
+    }
+  ]
+}
+
+

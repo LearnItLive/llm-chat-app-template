@@ -13,9 +13,22 @@ import { Env, ChatMessage } from "./types";
 // https://developers.cloudflare.com/workers-ai/models/
 const MODEL_ID = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
-// Default system prompt
+// Default system prompt adapted for Lily and Learn It Live
 const SYSTEM_PROMPT =
-  "You are a helpful, friendly assistant. Provide concise and accurate responses.";
+  "You are Lily, the Learn It Live virtual support assistant. Answer concisely and accurately about Learn It Live classes, schedules, recordings, membership, pricing, and account help. Use the provided Learn It Live resources and URLs when relevant. If unsure or the information is not in the resources, say you are not certain and suggest visiting the Help page.";
+
+async function loadResources(env: Env): Promise<any | null> {
+  try {
+    // Fetch static resources via the Assets binding per Cloudflare docs
+    // https://developers.cloudflare.com/workers/static-assets/binding/
+    const assetsUrl = "https://assets.local/resources.json";
+    const res = await env.ASSETS.fetch(new Request(assetsUrl));
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
 
 export default {
   /**
@@ -62,9 +75,19 @@ async function handleChatRequest(
       messages: ChatMessage[];
     };
 
-    // Add system prompt if not present
+    // Ensure Lily's system prompt is present
     if (!messages.some((msg) => msg.role === "system")) {
       messages.unshift({ role: "system", content: SYSTEM_PROMPT });
+    }
+
+    // Load Learn It Live resources and provide as additional system context
+    const resources = await loadResources(env);
+    if (resources) {
+      messages.unshift({
+        role: "system",
+        content:
+          "Learn It Live resources (JSON): " + JSON.stringify(resources),
+      });
     }
 
     const response = await env.AI.run(
