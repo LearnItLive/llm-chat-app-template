@@ -151,3 +151,14 @@ The UI styling is contained in the `<style>` section of `public/index.html`. You
 - [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
 - [Cloudflare Workers AI Documentation](https://developers.cloudflare.com/workers-ai/)
 - [Workers AI Models](https://developers.cloudflare.com/workers-ai/models/)
+ - [Cloudflare AutoRAG](https://developers.cloudflare.com/autorag/)
+
+### Optional: Cloudflare AutoRAG integration
+
+If you have an AutoRAG instance, you can enable retrieval-augmented context:
+
+- Configure environment variables (via Wrangler `vars` or secrets):
+  - `AUTORAG_INSTANCE`: your AutoRAG instance name
+  - `AUTORAG_TENANT` (optional): multitenancy filter if used in AutoRAG
+
+When configured, the Worker will query AutoRAG for each user prompt and inject the result as additional system context alongside `public/resources.json`.
