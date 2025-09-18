@@ -3041,6 +3041,61 @@
     {
       "q": "What’s the access code for the call today",
       "a": "Access codes are provided by instructors. You can contact them by visiting their profile page."
+    },
+    {
+      "q": "What is LiL+ Membership?",
+      "a": "LiL+ is Learn It Live's membership that gives you access to live programming from contributing experts, on‑demand recordings, and special deals on premium courses. See the membership page for current details and offers.",
+      "url": "https://learnitlive.zendesk.com/hc/en-us/articles/360051805172-What-is-the-LiL-Membership"
+    },
+    {
+      "q": "What do I get with LiL+?",
+      "a": "Active members can join a rotating calendar of live classes, watch a large library of recorded sessions, and receive member‑only pricing on certain premium programs. Exact inclusions and promos change over time—check the membership page for what's included now.",
+      "url": "https://learnitlive.zendesk.com/hc/en-us/articles/360051805172-What-is-the-LiL-Membership"
+    },
+    {
+      "q": "Does LiL+ include live classes?",
+      "a": "Yes—LiL+ features ongoing live programming from contributing experts that you can attend while your membership is active.",
+      "url": "https://learnitlive.zendesk.com/hc/en-us/articles/360051805172-What-is-the-LiL-Membership"
+    },
+    {
+      "q": "How many recordings are available with LiL+?",
+      "a": "LiL+ provides access to a large and growing library of on‑demand recordings (thousands of sessions). The catalog evolves; see the membership page for the latest count.",
+      "url": "https://learnitlive.zendesk.com/hc/en-us/articles/360051805172-What-is-the-LiL-Membership"
+    },
+    {
+      "q": "Are premium workshops or certifications included?",
+      "a": "Some premium programs are offered at member pricing or as separate purchases. LiL+ focuses on access to live member programming and a large on‑demand library. Always review the class page for pricing and eligibility.",
+      "url": "https://learnitlive.zendesk.com/hc/en-us/articles/360051805172-What-is-the-LiL-Membership"
+    },
+    {
+      "q": "Is there an annual plan for LiL+?",
+      "a": "Membership is typically offered with monthly and annual billing options. Pricing and promotions vary by time and region—see the membership page for current plans.",
+      "url": "https://learnitlive.zendesk.com/hc/en-us/articles/360051805172-What-is-the-LiL-Membership"
+    },
+    {
+      "q": "Can I cancel LiL+ at any time?",
+      "a": "Yes—you can cancel any time from your account settings. When a membership ends, access to member‑only classes and recordings is removed. For step‑by‑step instructions, see the cancellation help article in the Help Center.",
+      "url": "https://learnitlive.zendesk.com/hc/en-us/articles/360059130332-How-do-I-cancel-my-LiL-Membership"
+    },
+    {
+      "q": "What happens to my classes if I cancel?",
+      "a": "Member‑only classes and discounted member items are removed from the account when the membership ends. This includes upcoming live sessions and recordings that were included as part of LiL+.",
+      "url": "https://learnitlive.zendesk.com/hc/en-us/articles/4415353573915-If-I-cancel-my-membership-what-happens-to-member-classes-in-my-account"
+    },
+    {
+      "q": "Do I keep access to recordings after live classes?",
+      "a": "Most LiL classes are recorded and available to watch later while your membership is active. Availability can vary by instructor and program.",
+      "url": "https://learnitlive.zendesk.com/hc/en-us/articles/360051805172-What-is-the-LiL-Membership"
+    },
+    {
+      "q": "What kinds of topics are covered in LiL+?",
+      "a": "Programming spans wellness, mindfulness, yoga, nutrition, personal development, and other expert‑led topics. The schedule changes regularly—browse Discover to see what's coming up.",
+      "url": "https://learnitlive.zendesk.com/hc/en-us/articles/360051805172-What-is-the-LiL-Membership"
+    },
+    {
+      "q": "How do I sign up for LiL+?",
+      "a": "Create or sign in to your Learn It Live account and choose a LiL+ plan on the membership page. After checkout, you can start joining live sessions immediately while your membership is active.",
+      "url": "https://learnitlive.zendesk.com/hc/en-us/articles/360051805172-What-is-the-LiL-Membership"
     }
   ]
 }
