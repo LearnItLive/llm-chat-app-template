@@ -12,6 +12,17 @@ export interface Env {
    * Binding for static assets.
    */
   ASSETS: { fetch: (request: Request) => Promise<Response> };
+
+  /**
+   * Optional: Cloudflare AutoRAG instance name to enable retrieval.
+   * Example: "my-autorag-instance"
+   */
+  AUTORAG_INSTANCE?: string;
+
+  /**
+   * Optional: Multitenancy/segment filter for AutoRAG (if configured in AutoRAG).
+   */
+  AUTORAG_TENANT?: string;
 }
 
 /**

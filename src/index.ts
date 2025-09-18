@@ -17,6 +17,37 @@ const MODEL_ID = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const SYSTEM_PROMPT =
   "You are Lily, the Learn It Live virtual support assistant. Answer concisely and accurately about Learn It Live classes, schedules, recordings, membership, pricing, and account help. Use the provided Learn It Live resources and URLs when relevant. If unsure or the information is not in the resources, say you are not certain and suggest visiting the Help page.";
 
+function buildContextFromResources(
+  userQuery: string,
+  resources: any,
+  maxFaq: number = 5,
+  maxAnswerChars: number = 400,
+): string | null {
+  if (!resources || typeof resources !== "object") return null;
+  const brand = resources.brand?.name || "Lily Virtual Support";
+  const faqs: Array<{ q: string; a: string; url?: string }> = Array.isArray(resources.faq)
+    ? resources.faq
+    : [];
+
+  const q = (userQuery || "").toLowerCase();
+  let candidates = faqs;
+  if (q) {
+    candidates = faqs.filter((f) => {
+      const qq = (f.q || "").toLowerCase();
+      const aa = (f.a || "").toLowerCase();
+      return q && (qq.includes(q) || aa.includes(q));
+    });
+  }
+  if (candidates.length === 0) candidates = faqs;
+  const selected = candidates.slice(0, maxFaq).map((f) => ({
+    q: f.q,
+    a: f.a.length > maxAnswerChars ? f.a.slice(0, maxAnswerChars) + "…" : f.a,
+    url: f.url,
+  }));
+
+  return JSON.stringify({ brand, selected_faq: selected });
+}
+
 async function loadResources(env: Env): Promise<any | null> {
   try {
     // Fetch static resources via the Assets binding per Cloudflare docs
@@ -80,14 +111,48 @@ async function handleChatRequest(
       messages.unshift({ role: "system", content: SYSTEM_PROMPT });
     }
 
-    // Load Learn It Live resources and provide as additional system context
+    // Load Learn It Live resources and provide compact, relevant system context
     const resources = await loadResources(env);
+    const latestUser = messages.filter((m) => m.role === "user").slice(-1)[0]?.content ?? "";
     if (resources) {
-      messages.unshift({
-        role: "system",
-        content:
-          "Learn It Live resources (JSON): " + JSON.stringify(resources),
-      });
+      const compact = buildContextFromResources(latestUser, resources);
+      if (compact) {
+        messages.unshift({
+          role: "system",
+          content: "Learn It Live resources (selected): " + compact,
+        });
+      }
+    }
+
+    // Optional: Query Cloudflare AutoRAG for retrieval-augmented context
+    // https://developers.cloudflare.com/autorag/
+    if (env.AUTORAG_INSTANCE && typeof (env.AI as any).autorag === "function") {
+      try {
+        const ar = (env.AI as any).autorag(env.AUTORAG_INSTANCE);
+        // Prefer aiSearch to get synthesized answer + citations; fall back to search if needed
+        const queryText = latestUser;
+        if (queryText) {
+          const opts: any = { query: queryText };
+          if (env.AUTORAG_TENANT) {
+            opts.filter = { tenant: env.AUTORAG_TENANT };
+          }
+          let ragResult: any = null;
+          if (typeof ar.aiSearch === "function") {
+            ragResult = await ar.aiSearch(opts);
+          } else if (typeof ar.search === "function") {
+            ragResult = await ar.search(opts);
+          }
+          if (ragResult) {
+            messages.unshift({
+              role: "system",
+              content:
+                "AutoRAG context: " + JSON.stringify(ragResult),
+            });
+          }
+        }
+      } catch (e) {
+        // Silent fallback if AutoRAG is unavailable/misconfigured
+      }
     }
 
     const response = await env.AI.run(
