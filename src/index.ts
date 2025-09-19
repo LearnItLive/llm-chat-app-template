@@ -72,6 +72,17 @@ async function loadDirectives(env: Env): Promise<any | null> {
   }
 }
 
+async function loadDirectiveText(env: Env): Promise<string | null> {
+  try {
+    const url = "https://assets.local/lily-directive.txt";
+    const res = await env.ASSETS.fetch(new Request(url));
+    if (!res.ok) return null;
+    return await res.text();
+  } catch {
+    return null;
+  }
+}
+
 function buildPolicyFromDirectives(directives: any): string | null {
   if (!directives) return null;
   const parts: string[] = [];
@@ -103,6 +114,12 @@ function buildPolicyFromDirectives(directives: any): string | null {
   push("attachment_handling", directives.attachment_handling);
   push("tone_escalation_sensitivity", directives.tone_escalation_sensitivity);
   push("link_policy", directives.link_policy);
+  push("purpose_and_scope", directives.purpose_and_scope);
+  push("voice_and_style", directives.voice_and_style);
+  push("canonical_links", directives.canonical_links);
+  push("clarifying_questions", directives.clarifying_questions);
+  push("do_not", directives.do_not);
+  push("core_intent_templates", directives.core_intent_templates);
 
   if (parts.length === 0) return null;
   return "Policy for Lily (apply strictly):\n" + parts.join("\n");
@@ -176,6 +193,10 @@ async function handleChatRequest(
     const policy = buildPolicyFromDirectives(directives);
     if (policy) {
       messages.unshift({ role: "system", content: policy });
+    }
+    const directiveText = await loadDirectiveText(env);
+    if (directiveText) {
+      messages.unshift({ role: "system", content: directiveText });
     }
 
     // Optional: Query Cloudflare AutoRAG for retrieval-augmented context
