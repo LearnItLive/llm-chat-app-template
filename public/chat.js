@@ -22,6 +22,33 @@ let chatHistory = [
 let isProcessing = false;
 let resourcesData = null;
 
+// Linkify helper: escape HTML, then convert URLs and emails to anchors
+function escapeHtml(str) {
+  return str
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function linkify(text) {
+  const escaped = escapeHtml(text || "");
+  // URLs with protocol, optional leading @ used in some prompts
+  let html = escaped.replace(/@?(https?:\/\/[^\s<)]+)/g, (m, url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+  });
+  // www. URLs without protocol
+  html = html.replace(/(^|[^\w@])(www\.[^\s<)]+)/g, (m, p1, host) => {
+    return `${p1}<a href="https://${host}" target="_blank" rel="noopener noreferrer">${host}</a>`;
+  });
+  // Emails
+  html = html.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, (m, email) => {
+    return `<a href="mailto:${email}">${email}</a>`;
+  });
+  return html;
+}
+
 // Auto-resize textarea as user types
 userInput.addEventListener("input", function () {
   this.style.height = "auto";
@@ -143,9 +170,9 @@ async function sendMessage() {
         try {
           const jsonData = JSON.parse(line);
           if (jsonData.response) {
-            // Append new content to existing text
+            // Append new content to existing text and render with linkification
             responseText += jsonData.response;
-            assistantMessageEl.querySelector("p").textContent = responseText;
+            assistantMessageEl.querySelector("p").innerHTML = linkify(responseText);
 
             // Scroll to bottom
             chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -182,7 +209,13 @@ async function sendMessage() {
 function addMessageToChat(role, content) {
   const messageEl = document.createElement("div");
   messageEl.className = `message ${role}-message`;
-  messageEl.innerHTML = `<p>${content}</p>`;
+  if (role === "assistant") {
+    messageEl.innerHTML = `<p>${linkify(content)}</p>`;
+  } else {
+    const p = document.createElement("p");
+    p.textContent = content;
+    messageEl.appendChild(p);
+  }
   chatMessages.appendChild(messageEl);
 
   // Scroll to bottom
