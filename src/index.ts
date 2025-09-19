@@ -210,24 +210,43 @@ async function handleChatRequest(
     }
 
     const modelId = (env.MODEL_ID || DEFAULT_MODEL_ID) as any;
-    const response = await env.AI.run(
-      modelId,
-      {
-        messages,
-        max_tokens: 1024,
-      },
-      {
-        returnRawResponse: true,
-        // Uncomment to use AI Gateway
-        // gateway: {
-        //   id: "YOUR_GATEWAY_ID", // Replace with your AI Gateway ID
-        //   skipCache: false,      // Set to true to bypass cache
-        //   cacheTtl: 3600,        // Cache time-to-live in seconds
-        // },
-      },
-    );
+    const payload = { messages, max_tokens: 1024 } as any;
+    const options = { returnRawResponse: true } as any;
 
-    // Return streaming response
+    async function tryRun(model: any): Promise<Response> {
+      return (await env.AI.run(model, payload, options)) as unknown as Response;
+    }
+
+    // Primary attempt
+    let response = await tryRun(modelId);
+
+    // If the primary model failed (e.g., 400 due to unsupported chat schema), fall back
+    if (!response.ok) {
+      const fallbacks: any[] = [
+        "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "@cf/meta/llama-3.1-8b-instruct",
+      ];
+      for (const fb of fallbacks) {
+        try {
+          const r = await tryRun(fb);
+          if (r.ok) {
+            response = r;
+            break;
+          }
+        } catch {
+          // continue
+        }
+      }
+    }
+
+    if (!response.ok) {
+      return new Response(
+        JSON.stringify({ error: "Model invocation failed" }),
+        { status: 500, headers: { "content-type": "application/json" } },
+      );
+    }
+
+    // Return streaming response (successful model)
     return response;
   } catch (error) {
     console.error("Error processing chat request:", error);
