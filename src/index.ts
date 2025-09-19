@@ -9,9 +9,9 @@
  */
 import { Env, ChatMessage } from "./types";
 
-// Model ID for Workers AI model
+// Model ID for Workers AI model (default). Allow override via env.MODEL_ID
 // https://developers.cloudflare.com/workers-ai/models/
-const MODEL_ID = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+const DEFAULT_MODEL_ID = "@cf/openai/gpt-oss-120b";
 
 // Default system prompt adapted for Lily and Learn It Live
 const SYSTEM_PROMPT =
@@ -59,6 +59,53 @@ async function loadResources(env: Env): Promise<any | null> {
   } catch {
     return null;
   }
+}
+
+async function loadDirectives(env: Env): Promise<any | null> {
+  try {
+    const url = "https://assets.local/directives.json";
+    const res = await env.ASSETS.fetch(new Request(url));
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+function buildPolicyFromDirectives(directives: any): string | null {
+  if (!directives) return null;
+  const parts: string[] = [];
+  const push = (label: string, v: unknown) => {
+    if (v === undefined || v === null) return;
+    if (typeof v === "string" && v.trim() === "") return;
+    parts.push(`${label}: ${typeof v === "string" ? v : JSON.stringify(v)}`);
+  };
+
+  push("style", directives.style);
+  push("tone", directives.tone);
+  push("max_response_length", directives.max_response_length);
+  push("introduction", directives.introduction);
+  push("only_answer_what_is_asked", directives.only_answer_what_is_asked);
+  push("answers_should_be_clear_and_concise", directives.answers_should_be_clear_and_concise);
+  push("site_navigation_help", directives.site_navigation_help);
+  push("class_navigation_help", directives.class_navigation_help);
+  push("context_related_question_response", directives.context_related_question_response);
+  push("content_related_question_response", directives.content_related_question_response);
+  push("when_asking_about_class_info", directives.when_asking_about_class_info);
+  push("default_fallback_response", directives.default_fallback_response);
+  push("when_an_answer_is_unknown", directives.when_an_answer_is_unknown);
+  push("language_support", directives.language_support);
+  push("role_differentiation", directives.role_differentiation);
+  push("escalation_logic", directives.escalation_logic);
+  push("resource_referencing", directives.resource_referencing);
+  push("trust_and_security", directives.trust_and_security);
+  push("conversation_closure_behavior", directives.conversation_closure_behavior);
+  push("attachment_handling", directives.attachment_handling);
+  push("tone_escalation_sensitivity", directives.tone_escalation_sensitivity);
+  push("link_policy", directives.link_policy);
+
+  if (parts.length === 0) return null;
+  return "Policy for Lily (apply strictly):\n" + parts.join("\n");
 }
 
 export default {
@@ -124,6 +171,13 @@ async function handleChatRequest(
       }
     }
 
+    // Load directives (policy) and prepend as a high-priority system message
+    const directives = await loadDirectives(env);
+    const policy = buildPolicyFromDirectives(directives);
+    if (policy) {
+      messages.unshift({ role: "system", content: policy });
+    }
+
     // Optional: Query Cloudflare AutoRAG for retrieval-augmented context
     // https://developers.cloudflare.com/autorag/
     if (env.AUTORAG_INSTANCE && typeof (env.AI as any).autorag === "function") {
@@ -155,8 +209,9 @@ async function handleChatRequest(
       }
     }
 
+    const modelId = (env.MODEL_ID || DEFAULT_MODEL_ID) as any;
     const response = await env.AI.run(
-      MODEL_ID,
+      modelId,
       {
         messages,
         max_tokens: 1024,

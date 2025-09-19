@@ -23,6 +23,12 @@ export interface Env {
    * Optional: Multitenancy/segment filter for AutoRAG (if configured in AutoRAG).
    */
   AUTORAG_TENANT?: string;
+
+  /**
+   * Optional: Override default model id for Workers AI.
+   * Example: "@cf/openai/gpt-oss-120b"
+   */
+  MODEL_ID?: string;
 }
 
 /**
